@@ -29,24 +29,44 @@ const Dashboard = () => {
 				return
 			}
 
+			const isPrice = (obj:any): obj is Price => {
+				return obj.id !== undefined;
+			}
+
+			const isArrayOfPrices = (obj: any): obj is Price => {
+				return Array.isArray(obj) && obj.every(isPrice);
+			}
+
 			try {
 				if (!event || !event?.data) {
 					return;
 				}
-				const price:Price = JSON.parse(event?.data);
+
+				let data = JSON.parse(event?.data)
+				if (isPrice(data)) {
+					setPricesByStock((prevState) => {
+						return updatePricesByStock(prevState, data);
+					})
+				} else if (isArrayOfPrices(data)) {
+					setPricesByStock((prevState) => {
+						let newState = {...prevState};
+						for (let price of data) {
+							newState = updatePricesByStock(newState, price);
+						}
+						return newState;
+					})
+				} else {
+					console.log(data)
+				}
 
 				setError(false)
-
-				setPricesByStock((prevState) => {
-					return updatePricesByStock(prevState, price);
-				})
 			} catch (err) {
-				// console.error(err);
+				console.log(event.data)
 			}
 		};
 
 		socketRef.current.onerror = (error) => {
-			console.error(`WebSocket error: ${error}`);
+			console.error(`WebSocket error reported`);
 			setError(true);
 		};
 
@@ -80,6 +100,7 @@ const Dashboard = () => {
 			let res = await fetch(`http://${process.env.REACT_APP_SERVER_HOST}:8080/stocks/`);
 			let data = await res.json();
 			setStocks(data.stocks);
+			setError(false)
 		}
 		catch(err) {
 			setError(true);
