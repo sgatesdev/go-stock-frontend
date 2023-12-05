@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom';
 import Price from '../types/Price';
 import PriceFilter from '../types/PriceFilter';
 import ChartSingleSeries from '../components/ChartSingleSeries';
+import PriceDetailsSeries from '../components/PriceDetailsSeries';
 
 
 const Analysis = () => {
 	const [prices, setPrices] = useState<Price[] | null>();
 	const [filteredPrices, setFilteredPrices] = useState<Price[] | null>();
 	const [priceFilter, setPriceFilter] = useState<PriceFilter>({time: new Date().getTime()/1000, unit: "day", range: 1});
+	const [stockName, setStockName] = useState("")
 
 	const [error, setError] = useState(false);
 	const { id } = useParams();
@@ -27,6 +29,10 @@ const Analysis = () => {
 			let data = await res.json();
 			setPrices(data);
 			setFilteredPrices(data);
+
+			res = await fetch(`http://${process.env.REACT_APP_SERVER_HOST}:8080/stocks/${id}`);
+			data = await res.json();
+			setStockName(data.name);
 		}
 		catch(err) {
 			setError(true);
@@ -80,6 +86,11 @@ const Analysis = () => {
 			</div>
 			<div className="row">
 				<div className="col-sm">
+					<h1>{stockName}</h1>
+				</div>
+			</div>
+			<div className="row">
+				<div className="col-sm">
 					<input type="date" value={new Date(priceFilter.time*1000).toISOString().split('T')[0]} onChange={(e : React.FormEvent<HTMLInputElement>) => processDateInput(e.currentTarget.value)}></input>
 					<input type="text" value={priceFilter.range} size={1} onChange={(e : React.FormEvent<HTMLInputElement>) => processRangeInput(e.currentTarget.value)} className="mx-2">
 					</input>
@@ -91,7 +102,8 @@ const Analysis = () => {
 				</div>
 			</div>
 			<div className="row" style={{height:"650px"}}>
-					<ChartSingleSeries prices={filteredPrices} height="650px" />
+					<ChartSingleSeries prices={filteredPrices} height="500px" />
+					{id && filteredPrices ? <PriceDetailsSeries symbol={id} prices={filteredPrices} /> : ''}
 			</div>
 		</div>
 	);

@@ -47,7 +47,7 @@ const ChartSingleSeries = ({prices, height}:{prices:Price[] | null | undefined, 
 			// onChartReady={this.onChartReadyCallback}
 			// onEvents={EventsDict}
 			// opts={}
-			style={{height:height}}
+			style={{height:height, marginTop: '0px'}}
 		/>);
 }
 

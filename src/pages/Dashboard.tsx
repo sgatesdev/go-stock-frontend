@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import Price from "../types/Price";
-import { Link } from "react-router-dom";
-import ChartSingleSeries from "../components/ChartSingleSeries";
+import Stock from '../types/Stock';
 import StockPriceState from "../types/StockPriceState";
+import DashboardItem from "../components/DashboardItem";
 
 const Dashboard = () => {
-	const [stocks, setStocks] = useState([]);
+	const [stocks, setStocks] = useState<Stock[]>([]);
 	const [pricesByStock, setPricesByStock] = useState<StockPriceState>({});
 	const [error, setError] = useState(false);
 
@@ -111,18 +111,15 @@ const Dashboard = () => {
 		return pricesByStock[id] || [];
 	}
 
+	// TODO: have toggle for portfolio view, show metrics for entire portfolio
+
 	return(
 		<div>
 			<h1>Dashboard</h1>
 			<div className="row">
 				{error && <div className="alert alert-danger">There was an error loading the dashboard.</div>}
-				{stocks.map((stock: any) => (
-					<div className="col-sm-6 py-2" style={{height: '300px'}} key={stock.symbol}>
-						<Link to = {`/stocks/${stock.id}`}>
-						<h5 className="card-title">{stock.symbol}</h5>
-						</Link>
-						<ChartSingleSeries prices={getPricesByStock(stock.id)} height="300px" />
-				</div>					
+				{stocks.map((stock) => (
+					<DashboardItem stock={stock} prices={getPricesByStock(stock.id!)}/>				
 				))}
 			</div>
 		</div>
